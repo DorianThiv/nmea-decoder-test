@@ -10,7 +10,7 @@ This module is cannot be use to decode private frame
 Example:
     Text...
 
-        $ python core.py
+        BaseGPS.getInstance(frame)
 
 Text...
 
@@ -50,8 +50,9 @@ class GPSTypeError(Exception):
     def __str__(self):
         return "[GPSTypeError] : {}".format(self.message)
 
-
 class BaseGPS:
+
+    TYPE = ""
 
     ENCODING = "ascii"
     BAUD_RATE = 4800
@@ -87,20 +88,19 @@ class BaseGPS:
     def __init__(self, frame):
         if frame[0] != '$': # and len(frame) != BaseGPS.SIZE:
             raise GPSFormatError("Lenght error : {}".format(len(frame)))
-        self.data = self.split(frame)
+        self.data = self._split(frame)
         self.receiver = self.data[0][BaseGPS.IDX_REC_ID_S:BaseGPS.IDX_REC_ID_E]
         self.type = self.data[0][BaseGPS.IDX_FRAME_TYPE_S:BaseGPS.IDX_FRAME_TYPE_E]
 
-    def split(self, frame):
+    def _split(self, frame):
         if '*' in frame:
             frame = frame.rpartition('*')[0]
         frame = re.sub(r'[*$]', '', frame)
-        data = frame.split(BaseGPS.SEP)
-        print(data)
+        data = frame.split(BaseGPS.SEP) 
         return data
 
     def __str__(self):
-        return "receiver : {}, type : {}, checksum : {}".format(self.receiver, self.type, self.checksum)
+        return "receiver : {}, type : {}".format(self.receiver, self.type)
 
 class GPSGGA(BaseGPS):
 
@@ -142,7 +142,6 @@ class GPSGGA(BaseGPS):
         self.sattelites = self.data[GPSGGA.IDX_SAT]
         self.altitude = self.data[GPSGGA.IDX_ALT[0]:GPSGGA.IDX_ALT[1]]
         self.checksum = frame.rpartition('*')[2]
-        print(self)
 
     def __str__(self):
         return "* Receiver: {}\n* Type: {}\n* Time: {}\n* Lattitude: {}\n* Longitude: {}\n* Quality: {}\n* Sattelites: {}\n* Altitude: {}\n* Checksum: {}\n".format(
@@ -188,7 +187,6 @@ class GPSGLL(BaseGPS):
         self.longitude = self.data[GPSGLL.IDX_LONG[0]:GPSGLL.IDX_LONG[1]]
         self.time = self.data[GPSGLL.IDX_TIME]
         self.data = self.data[GPSGLL.IDX_DATA]
-        print(self)
 
     def __str__(self):
         return "* Receiver: {}\n* Type: {}\n* Lattitude: {}\n* Longitude: {}\n* Time: {}\n* Data: {}\n".format(
@@ -238,7 +236,6 @@ class GPSGSA(BaseGPS):
         self.hdop = self.data[GPSGSA.IDX_HDOP]
         self.vdop = self.data[GPSGSA.IDX_VDOP]
         self.checksum = frame.rpartition('*')[2]
-        print(self)
 
     def __str__(self):
         return "* Receiver: {}\n* Type: {}\n* Mode: {}\n* Fix: {}\n* Satellites: {}\n* PDOP: {}\n* HDOP: {}\n* VDOP: {}\n* Checksum: {}\n".format(
@@ -295,7 +292,6 @@ class GPSGSV(BaseGPS):
         self.elevation = self.data[GPSGSV.IDX_ELEV]
         self.azimuth = self.data[GPSGSV.IDX_AZIM]
         self.checksum = frame.rpartition('*')[2]
-        print(self)
 
     def __str__(self):
         return "* Receiver: {}\n* Type: {}\n* Total Frames: {}\n* Current Frame: {}\n* Satellites: {}\n* First Satellite ID: {}\n* Elevation: {}°\n* Azimuth: {}°\n* Checksum: {}\n".format(
@@ -340,7 +336,6 @@ class GPSVTG(BaseGPS):
         self.mtrack = self.data[GPSVTG.IDX_TRACK_MAGN[0]:GPSVTG.IDX_TRACK_MAGN[1]]
         self.nspeed = self.data[GPSVTG.IDX_SPEED_KNOTS[0]:GPSVTG.IDX_SPEED_KNOTS[1]]
         self.kspeed = self.data[GPSVTG.IDX_SPEED_KMH[0]:GPSVTG.IDX_SPEED_KMH[1]]
-        print(self)
     
     def __str__(self):
         return "* Receiver: {}\n* Type: {}\n* Track Degrees: {}\n* Track Magnetic: {}\n* Speed Knots: {}\n* Speed Km/h: {}\n".format(
@@ -397,7 +392,6 @@ class GPSRMC(BaseGPS):
         self.date = self.data[GPSRMC.IDX_DATE]
         self.magnetic = self.data[GPSRMC.IDX_MAGN[0]:GPSRMC.IDX_MAGN[1]]
         self.checksum = frame.rpartition('*')[2]
-        print(self)
 
     def __str__(self):
         return "* Receiver: {}\n* Type: {}\n* Hours: {}\n* Alert: {}\n* Latitude: {}\n* Longitude: {}\n* Speed: {}\n* Track: {}\n* Date: {}\n* Magnetic: {}\n* Checksum: {}\n".format(
@@ -413,21 +407,3 @@ class GPSRMC(BaseGPS):
         self.magnetic,
         self.checksum
     )
-
-if __name__ == "__main__":
-
-    try:
-        # Instance GPS --> Give right instance from type detected.
-        gpsgga = GPSGGA("$GPGGA,123519,4807.038,N,01131.324,E,1,08,545.4,M,46.9,M,,*42")
-        gpsgll = GPSGLL("$GPGLL,4807.038,N,01131.324,E,123519,1")
-        gpsgsa = GPSGSA("$GPGSA,A,3,04,05,,09,12,,,24,,,,,2.5,1.3,2.1*39")
-        gpsgsv = GPSGSV("$GPGSV,2,1,08,01,40,083,46*75")
-        gpsvtg = GPSVTG("$GPVTG,054.7,T,034.4,M,005.5,N,010.3,K")
-        gpsrmc = GPSRMC("$GPRMC,225446,A,4916.45,N,12311.12,W,000.5,054.7,191194,020.3,E*68")
-
-    except GPSFormatError as e:
-        print(e)
-    except GPSTypeError as e:
-        print(e)
-    except Exception as e:
-        print(e)
