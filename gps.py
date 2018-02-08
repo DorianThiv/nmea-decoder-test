@@ -1,36 +1,3 @@
-#!/usr/bin/env python3
-
-""" GPS Frame Decoder
-
-This module be able to decode NMEA (National Marine & Electronics Association) frame.
-GPS is simple data transmission protocole. It provide details about electronic gear and devices.
-Using NMEA-0183 standard.
-This module is cannot be use to decode private frame
-
-Example:
-    Text...
-
-        BaseGPS.getInstance(frame)
-
-Text...
-
-Attributes:
-    module_level_variable1 (int): Module level variables may be documented in
-        either the ``Attributes`` section of the module docstring, or in an
-        inline docstring immediately following the variable.
-
-        Either form is acceptable, but the two should not be mixed. Choose
-        one convention to document module level variables and be consistent
-        with it.
-
-Todo:
-    * Define GPS documentation
-    * GPS Variable and decoder
-
-.. Python Style Guide:
-   http://google.github.io/styleguide/pyguide.html
-
-"""
 
 import re
 
@@ -154,8 +121,7 @@ class GPSGGA(BaseGPS):
         self.sattelites,
         self.altitude,
         self.checksum
-    )
-        
+    )        
 
 class GPSGLL(BaseGPS):
     

@@ -1,5 +1,37 @@
 #!/usr/bin/env python3
 
+""" GPS Frame Decoder
+
+This module be able to decode NMEA (National Marine & Electronics Association) frame.
+GPS is simple data transmission protocole. It provide details about electronic gear and devices.
+Using NMEA-0183 standard.
+This module cannot be use to decode private frame
+
+Example:
+    run.py provide getInstance method to get an instance of the right 
+    gps frame.
+
+        Use: GPS.getInstance(frame)
+
+Return an instance inherited from BaseGPS
+
+classes:
+    * GPS 
+
+Attributes:
+    * getInstance (str)
+
+Exception:
+    * GPSFormatError(Exception)
+        args: str => message
+        
+    * GPSTypeError(Exception)
+        args: str => message
+
+This a Theoric decoder !!! It will be test in real situation 
+
+"""
+
 import sys
 import inspect
 
